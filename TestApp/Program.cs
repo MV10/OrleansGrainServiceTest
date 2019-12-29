@@ -51,18 +51,24 @@ namespace TestApp
                 ihost = host.Build();
                 await ihost.StartAsync();
 
+                Console.WriteLine("\nGetting IEchoClient reference.");
                 var echoClient = ihost.Services.GetRequiredService<IEchoClient>();
                 if (echoClient is null) throw new Exception("IEchoClient is null");
 
+                Console.WriteLine("\nCalling IEchoClient.IsGrainServiceValid.");
+                var valid = await echoClient.IsGrainServiceValid();
+                Console.WriteLine($"Result: {valid}");
+
+                Console.WriteLine("\nCalling IEchoClient.Echo.");
                 string message = "test";
                 var result = await echoClient.Echo(message);
                 if (string.IsNullOrWhiteSpace(result) || !result.Equals(message)) throw new Exception($"Result: {result}");
 
-                Console.WriteLine("Test successful.");
+                Console.WriteLine("\nTest successful.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"\n{ex}");
             }
             finally
             {

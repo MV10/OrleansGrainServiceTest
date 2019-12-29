@@ -27,5 +27,8 @@ namespace TestApp
 
         public Task<string> Echo(string message)
             => Task.FromResult(message);
+
+        public Task<bool> IsGrainServiceValid()
+            => Task.FromResult(true);
     }
 }

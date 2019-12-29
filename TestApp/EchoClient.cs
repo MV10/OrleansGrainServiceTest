@@ -12,5 +12,8 @@ namespace TestApp
 
         public Task<string> Echo(string message)
             => GrainService.Echo(message);
+
+        public Task<bool> IsGrainServiceValid()
+            => Task.FromResult(GrainService != null);
     }
 }

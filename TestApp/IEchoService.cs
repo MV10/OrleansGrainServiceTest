@@ -6,5 +6,6 @@ namespace TestApp
     public interface IEchoService : IGrainService
     {
         Task<string> Echo(string message);
+        Task<bool> IsGrainServiceValid();
     }
 }

@@ -38,6 +38,7 @@ namespace TestApp
                     {
                         parts.AddApplicationPart(typeof(EchoService).Assembly).WithReferences();
                         parts.AddApplicationPart(typeof(EchoClient).Assembly).WithReferences();
+                        parts.AddApplicationPart(typeof(SomeGrain).Assembly).WithReferences();
                     });
                     builder.AddGrainService<EchoService>();
                 });
@@ -46,10 +47,29 @@ namespace TestApp
                 {
                     services.AddLogging();
                     services.AddSingleton<IEchoClient, EchoClient>();
+                    services.AddSingleton((svc) =>
+                    {
+                        var clusterClient = svc.GetRequiredService<IClusterClient>();
+                        return clusterClient.GetGrain<ISomeGrain>(0);
+                    });
                 });
 
                 ihost = host.Build();
                 await ihost.StartAsync();
+
+                string message = "test";
+
+                Console.WriteLine("\nGetting ISomeGrain reference.");
+                var echoGrain = ihost.Services.GetRequiredService<ISomeGrain>();
+                if (echoGrain is null) throw new Exception("ISomeGrain is null");
+
+                Console.WriteLine("\nCalling ISomeGrain.IsGrainServiceValid.");
+                var grainValid = await echoGrain.IsGrainServiceValid();
+                Console.WriteLine($"Result: {grainValid}");
+
+                Console.WriteLine("\nCalling ISomeGrain.Echo.");
+                var grainResult = await echoGrain.Echo(message);
+                if (string.IsNullOrWhiteSpace(grainResult) || !grainResult.Equals(message)) throw new Exception($"Result: {grainResult}");
 
                 Console.WriteLine("\nGetting IEchoClient reference.");
                 var echoClient = ihost.Services.GetRequiredService<IEchoClient>();
@@ -60,7 +80,6 @@ namespace TestApp
                 Console.WriteLine($"Result: {valid}");
 
                 Console.WriteLine("\nCalling IEchoClient.Echo.");
-                string message = "test";
                 var result = await echoClient.Echo(message);
                 if (string.IsNullOrWhiteSpace(result) || !result.Equals(message)) throw new Exception($"Result: {result}");
 
